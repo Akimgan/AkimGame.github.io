@@ -1,0 +1,23 @@
+.dino{
+text-align: center;
+padding-left: 5%;
+color:red;
+
+
+}
+
+.flappy{
+	text-align: center;
+	margin-left: 30%;
+	color:red;
+
+}
+
+.html, .body {padding: 0;}
+		*{box-sizing: border-box;}
+		.body { background: #0c6e1e; padding: 50px; }
+		.canvas {
+			background: black;
+			margin: 0 auto;
+			display:block;
+		}
