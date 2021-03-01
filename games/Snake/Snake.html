@@ -1,0 +1,289 @@
+
+<html lang="en">
+<head>
+	
+	<title>!SnakeGame!</title>
+	<meta charset="UTF-8">
+
+<link rel="stylesheet" type="text/css" href="file:///C:/Users/Admin/Desktop/MySite/games/Snake/snake.css">
+	
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+
+<link rel="apple-touch-icon" sizes="180x180" href="C:\Users\Admin\Desktop\MySite\SnakeFavicon/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="C:\Users\Admin\Desktop\MySite\SnakeFavicon/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="C:\Users\Admin\Desktop\MySite\SnakeFavicon/favicon-16x16.png">
+<link rel="manifest" href="C:\Users\Admin\Desktop\MySite\SnakeFavicon/site.webmanifest">
+<link rel="mask-icon" href="C:\Users\Admin\Desktop\MySite\SnakeFavicon/safari-pinned-tab.svg" color="#000000">
+<meta name="msapplication-TileColor" content="#ffffff">
+<meta name="theme-color" content="#ffffff">
+
+</head>
+<body> 
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">AkimGames</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="C:\Users\Admin\Desktop\MySite/index.html">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="C:\Users\Admin\Desktop\MySite/games/games.html">Games</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Developer
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <li><a class="dropdown-item" href="https://vk.com/akimgan">Abdulvapov Akim</a></li>
+        
+            
+            
+          </ul>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+        </li>
+      </ul>
+      <form class="d-flex">
+        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+        <button class="btn btn-outline-success" type="submit">Search</button>
+      </form>
+    </div>
+  </div>
+</nav><br>
+<font><center>
+
+	<div class = "bott"><a href="Snake.html"><img src="https://art.pixilart.com/cfbcd4336297cdd.png"width = "150" height = "100"></a></div>
+		<canvas id = "mc" width="1060" height="500"></canvas>
+
+<script>
+	window.onload = function() {
+  document.addEventListener('keydown', changeDirection);
+  setInterval(loop, 1000/60); // 60 FPS
+}
+
+var
+  canv 				= document.getElementById('mc'), // canvas
+  ctx					= canv.getContext('2d'), // 2d context
+  gs = fkp			= false, // game started && first key pressed (initialization states)
+  speed = baseSpeed 	= 3, // snake movement speed
+  xv = yv				= 0, // velocity (x & y)
+  px 					= ~~(canv.width) / 2, // player X position
+  py 					= ~~(canv.height) / 2, // player Y position
+  pw = ph				= 20, // player size
+  aw = ah				= 20, // apple size
+  apples				= [], // apples list
+  trail				= [], // tail elements list (aka trail)
+  tail 				= 100, // tail size (1 for 10)
+  tailSafeZone		= 20, // self eating protection for head zone (aka safeZone)
+  cooldown			= false, // is key in cooldown mode
+  score				= 0; // current score
+
+
+// game main loop
+function loop()
+{
+  // logic
+                                                ctx.fillStyle = '#168a25';
+                                         ctx.fillRect(0, 0, canv.width, canv.height);
+
+  // force speed
+  px += xv;
+  py += yv;
+
+  // teleports
+  if( px > canv.width )
+    {px = 0;}
+
+  if( px + pw < 0 )
+    {px = canv.width;}
+
+  if( py + ph < 0 )
+    {py = canv.height;}
+
+  if( py > canv.height )
+    {py = 0;}
+
+  // paint the snake itself with the tail elements
+  ctx.fillStyle = '#095699';
+  for( var i = 0; i < trail.length; i++ )
+  {
+    ctx.fillStyle = trail[i].color || '#095699';
+    ctx.fillRect(trail[i].x, trail[i].y, pw, ph);
+  }
+
+  trail.push({x: px, y: py, color: ctx.fillStyle});
+
+  // limiter
+  if( trail.length > tail )
+  {
+    trail.shift();
+  }
+
+  // eaten
+  if( trail.length > tail )
+  {
+    trail.shift();
+  }
+
+  // self collisions
+  if( trail.length >= tail && gs )
+  {
+    for( var i = trail.length - tailSafeZone; i >= 0; i-- )
+    {
+      if(
+        px < (trail[i].x + pw)
+        && px + pw > trail[i].x
+        && py < (trail[i].y + ph)
+        && py + ph > trail[i].y
+      )
+      {
+        // got collision
+        tail = 10; // cut the tail
+        speed = baseSpeed; // cut the speed (flash nomore lol xD)
+
+        for( var t = 0; t < trail.length; t++ )
+        {
+          // highlight lossed area
+          trail[t].color = 'red';
+
+          if( t >= trail.length - tail )
+            {break;}
+        }
+      }
+    }
+  }
+
+  // paint apples
+  for( var a = 0; a < apples.length; a++ )
+  {
+    ctx.fillStyle = apples[a].color;
+    ctx.fillRect(apples[a].x, apples[a].y, aw, ah);
+  }
+
+  // check for snake head collisions with apples
+  for( var a = 0; a < apples.length; a++ )
+  {
+    if(
+      px < (apples[a].x + pw)
+      && px + pw > apples[a].x
+      && py < (apples[a].y + ph)
+      && py + ph > apples[a].y
+    )
+    {
+      // got collision with apple
+      apples.splice(a, 1); // remove this apple from the apples list
+      tail += 10; // add tail length
+      speed += .1; // add some speed
+      spawnApple(); // spawn another apple(-s)
+      break;
+    }
+  }
+}
+
+// apples spawner
+function spawnApple()
+{
+  var
+    newApple = {
+      x: ~~(Math.random() * canv.width),
+      y: ~~(Math.random() * canv.height),
+      color: 'red'
+    };
+
+  // forbid to spawn near the edges
+  if(
+    (newApple.x < aw || newApple.x > canv.width - aw)
+    ||
+    (newApple.y < ah || newApple.y > canv.height - ah)
+  )
+  {
+    spawnApple();
+    return;
+  }
+
+  // check for collisions with tail element, so no apple will be spawned in it
+  for( var i = 0; i < tail.length; i++ )
+  {
+    if(
+      newApple.x < (trail[i].x + pw)
+      && newApple.x + aw > trail[i].x
+      && newApple.y < (trail[i].y + ph)
+      && newApple.y + ah > trail[i].y
+    )
+    {
+      // got collision
+      spawnApple();
+      return;
+    }
+  }
+
+  apples.push(newApple);
+
+  if( apples.length < 3 && ~~(Math.random() * 1000) > 700 )
+  {
+    // 30% chance to spawn one more apple
+    spawnApple();
+  }
+}
+
+// random color generator (for debugging purpose or just 4fun)
+function rc()
+{
+  return '#' + ((~~(Math.random() * 255)).toString(16)) + ((~~(Math.random() * 255)).toString(16)) + ((~~(Math.random() * 255)).toString(16));
+}
+
+// velocity changer (controls)
+function changeDirection(evt)
+{
+  if( !fkp && [37,38,39,40].indexOf(evt.keyCode) > -1 )
+  {
+    setTimeout(function() {gs = true;}, 1000);
+    fkp = true;
+    spawnApple();
+  }
+
+  if( cooldown )
+    {return false;}
+
+  /*
+    4 directional movement.
+   */
+  if( evt.keyCode == 37 && !(xv > 0) ) // left arrow
+    {xv = -speed; yv = 0;}
+
+  if( evt.keyCode == 38 && !(yv > 0) ) // top arrow
+    {xv = 0; yv = -speed;}
+
+  if( evt.keyCode == 39 && !(xv < 0) ) // right arrow
+    {xv = speed; yv = 0;}
+
+  if( evt.keyCode == 40 && !(yv < 0) ) // down arrow
+    {xv = 0; yv = speed;}
+
+  cooldown = true;
+  
+
+  setTimeout(function() {cooldown = false;}, 100);
+}
+
+</script><br>
+
+<!-- JavaScript Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
+	
+<div style="height: 2px; background-color:#008504;"></div>
+<div>
+
+<font style="padding-top:1px" size="6" color = "#008504" font = "verdana"><center>Rules</font>
+
+<div style="height: 2px; background-color:#008504;"></div>
+<div>
+	<font size = "5" color = "#008504" font = "verdana">In this game you will play as a small snake that crawls around the map and collects fruits. You must avoid hurting your tail, which is lengthening due to the fact that you eat fruit.To start the game, press one of the < ^ > keys and control the snake with these keys</font>
+
+</body>
+</html>
